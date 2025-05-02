@@ -9,9 +9,22 @@ import SwiftUI
 
 // Main Content View
 struct ContentView: View {
+    @State private var isLaunching = true
+    
     var body: some View {
-        NavigationStack {
-            HomeView()
+        Group {
+            if isLaunching {
+                LaunchView()
+            } else {
+                NavigationStack {
+                    HomeView()
+                }
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { //after 5 seconds it will open home view
+                isLaunching = false
+            }
         }
     }
 }

@@ -9,9 +9,9 @@ import SwiftUI
 
 // Ingredients View
 struct IngredientsView: View {
-    @State private var ingredients: [String] = ["Pasta", "Tomatoes", "Garlic"]
+    @AppStorage("ingredientStorage") var ingredientStorage: String = "" //app storage to temporarily store the ingredients
+    @State private var ingredients: [String] = []
     @State private var newIngredient: String = ""
-    @State private var showRecipes = false
 
     var body: some View {
         VStack {
@@ -38,16 +38,11 @@ struct IngredientsView: View {
                 .disabled(newIngredient.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .padding()
-
-            
         }
+        .onAppear(perform: loadIngredients)
         .background(Color.appBackground)
         .navigationTitle("Your Ingredients")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            EditButton()
-                .tint(Color.appPrimaryOrange)
-        }
     }
 
     private func addIngredient() {
@@ -55,11 +50,27 @@ struct IngredientsView: View {
         if !trimmedIngredient.isEmpty {
             ingredients.append(trimmedIngredient)
             newIngredient = ""
+            saveIngredients() //save to app storage after add
         }
     }
 
     private func removeIngredient(at offsets: IndexSet) {
         ingredients.remove(atOffsets: offsets)
+        saveIngredients() //save to app storage after remove
+    }
+    
+    private func saveIngredients() {
+        if let data = try? JSONEncoder().encode(ingredients),
+            let json = String(data: data, encoding: .utf8) {
+            ingredientStorage = json
+        }
+    }
+
+    private func loadIngredients() {
+        if let data = ingredientStorage.data(using: .utf8),
+            let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            ingredients = decoded
+        }
     }
 }
 

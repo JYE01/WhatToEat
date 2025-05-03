@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""//app storage to temporarily store login information
+    @ObservedObject var loginModel: LoginViewModel
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack(spacing: 20) {
@@ -20,7 +20,7 @@ struct LoginView: View {
                 .fontWeight(.bold)
                 .foregroundColor(.appPrimaryOrange)
 
-            TextField("Email", text: $email)
+            TextField("Email", text: $loginModel.email)
                 .keyboardType(.emailAddress)
                 .textContentType(.emailAddress)
                 .autocapitalization(.none)
@@ -28,16 +28,24 @@ struct LoginView: View {
                 .background(Color.appLightOrange.opacity(0.2))
                 .cornerRadius(8)
 
-            SecureField("Password", text: $password)
+            SecureField("Password", text: $loginModel.password)
                 .textContentType(.password)
                 .padding()
                 .background(Color.appLightOrange.opacity(0.2))
                 .cornerRadius(8)
+            
+            if let error = loginModel.cannotLogin { //this will display login errors
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.subheadline)
+                    .padding(.top, -10)
+            }
 
             Button("Login") {
-                //Need to add logic for login, link to a function.
-                print("Login tapped (Email: \(email))")
-             
+                loginModel.login() //function for login from loginModel
+                if loginModel.canLogin {
+                    dismiss() //dismiss the view once logged in
+                }
             }
             .font(.title2)
             .fontWeight(.semibold)
@@ -70,12 +78,12 @@ struct LoginView: View {
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView { // Wrap in NavigationView for preview
-            LoginView()
+            LoginView(loginModel: LoginViewModel())
                 .preferredColorScheme(.light)
         }
 
         NavigationView { // Wrap in NavigationView for preview
-            LoginView()
+            LoginView(loginModel: LoginViewModel())
                 .preferredColorScheme(.dark)
         }
     }

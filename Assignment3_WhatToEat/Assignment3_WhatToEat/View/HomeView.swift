@@ -9,8 +9,10 @@ import SwiftUI
 
 // Home View
 struct HomeView: View {
+    @ObservedObject var loginModel: LoginViewModel
+    
     @State private var isButtonScaled = false
-    @State private var showingLogin = false //might be used later for hiding login once logged in.
+    @State private var accountOrLogin = false
 
     var body: some View {
 
@@ -63,16 +65,25 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                 NavigationLink(destination: LoginView()) {
-                     Image(systemName: "person.crop.circle")
-                         .font(.title2)
-                         .foregroundColor(.appPrimaryOrange)
-                 }
-
-                
+                Button(action: {
+                    DispatchQueue.main.async {
+                        accountOrLogin = true
+                    }
+                }) {
+                    Image(systemName: "person.crop.circle")
+                        .font(.title2)
+                        .foregroundColor(.appPrimaryOrange)
+                }
             }
         }
-        
+        NavigationLink(
+            destination: loginModel.canLogin
+                ? AnyView(AccountView()) // display account if logged in
+                : AnyView(LoginView(loginModel: loginModel)),
+            isActive: $accountOrLogin
+        ) {
+            EmptyView()
+        }
     }
 }
 
@@ -80,12 +91,12 @@ struct HomeView: View {
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack { // Use NavigationStack for preview consistency
-             HomeView()
+            HomeView(loginModel: LoginViewModel())
         }
         .preferredColorScheme(.light)
 
         NavigationStack { // Use NavigationStack for preview consistency
-             HomeView()
+            HomeView(loginModel: LoginViewModel())
         }
         .preferredColorScheme(.dark)
     }

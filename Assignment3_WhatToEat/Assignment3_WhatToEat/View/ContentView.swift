@@ -9,6 +9,8 @@ import SwiftUI
 
 // Main Content View
 struct ContentView: View {
+    @StateObject var loginModel = LoginViewModel()
+    
     @State private var isLaunching = true
     
     var body: some View {
@@ -17,7 +19,7 @@ struct ContentView: View {
                 LaunchView()
             } else {
                 NavigationStack {
-                    HomeView()
+                    HomeView(loginModel: loginModel)
                 }
             }
         }

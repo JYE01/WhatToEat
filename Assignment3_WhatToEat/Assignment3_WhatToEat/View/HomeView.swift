@@ -10,9 +10,12 @@ import SwiftUI
 // Home View
 struct HomeView: View {
     @State private var isButtonScaled = false
+    @State private var showingLogin = false //might be used later for hiding login once logged in.
 
     var body: some View {
+
         VStack(spacing: 40) {
+
             Spacer()
 
             Image("1")
@@ -25,26 +28,26 @@ struct HomeView: View {
             Text("Recipe Finder")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .foregroundColor(.appPrimaryOrange)
+                .foregroundColor(.appPrimaryOrange) //
 
             Text("Enter your ingredients and discover delicious recipes!")
                 .font(.headline)
-                .foregroundColor(.appMutedText)
+                .foregroundColor(.appMutedText) //
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             Spacer()
 
-            NavigationLink(destination: IngredientsView()) {
+            NavigationLink(destination: IngredientsView()) { //
                 Text("Find Recipes")
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
                     .padding(.vertical, 15)
                     .padding(.horizontal, 40)
-                    .background(Color.appPrimaryOrange)
+                    .background(Color.appPrimaryOrange) //
                     .clipShape(Capsule())
-                    .shadow(color: Color.appPrimaryOrange.opacity(0.5), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.appPrimaryOrange.opacity(0.5), radius: 8, x: 0, y: 4) //
                     .scaleEffect(isButtonScaled ? 1.05 : 1.0)
                     .animation(.easeInOut(duration: 0.15), value: isButtonScaled)
                     .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
@@ -57,19 +60,31 @@ struct HomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
         .navigationTitle("Home")
-        .navigationBarHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                 NavigationLink(destination: LoginView()) {
+                     Image(systemName: "person.crop.circle")
+                         .font(.title2)
+                         .foregroundColor(.appPrimaryOrange)
+                 }
+
+                
+            }
+        }
+        
     }
 }
 
 // Preview
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationStack {
+        NavigationStack { // Use NavigationStack for preview consistency
              HomeView()
         }
         .preferredColorScheme(.light)
 
-        NavigationStack {
+        NavigationStack { // Use NavigationStack for preview consistency
              HomeView()
         }
         .preferredColorScheme(.dark)

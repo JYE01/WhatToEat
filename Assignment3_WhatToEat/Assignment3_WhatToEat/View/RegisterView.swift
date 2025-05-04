@@ -1,5 +1,5 @@
 //
-//  RegistserView.swift
+//  RegisterView.swift
 //  Assignment3_WhatToEat
 //
 //  Created by Junhui Ye on 4/5/2025.
@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-struct RegistserView: View {
+struct RegisterView: View {
     @ObservedObject var loginModel: LoginViewModel
-    
-    @State private var showHome = false
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         VStack(spacing: 20) {
@@ -49,15 +48,8 @@ struct RegistserView: View {
                     .font(.subheadline)
             }
             
-            NavigationLink(destination: HomeView(loginModel: loginModel), isActive: $showHome) {
-                EmptyView()
-            }
-            
             Button("Register") {
                 loginModel.register()
-                if loginModel.canRegister {
-                    showHome = true
-                }
             }
             .font(.title2)
             .fontWeight(.semibold)
@@ -82,9 +74,15 @@ struct RegistserView: View {
         .background(Color.appBackground.edgesIgnoringSafeArea(.all))
         .navigationTitle("Create Account")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: loginModel.canRegister) { newValue in
+            if newValue {
+                dismiss()
+                loginModel.reset()
+            }
+        }
     }
 }
 
 #Preview {
-    RegistserView(loginModel: LoginViewModel())
+    RegisterView(loginModel: LoginViewModel())
 }

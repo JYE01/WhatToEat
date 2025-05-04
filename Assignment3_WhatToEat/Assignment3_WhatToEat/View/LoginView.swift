@@ -58,7 +58,7 @@ struct LoginView: View {
             .clipShape(Capsule())
             .shadow(color: Color.appPrimaryOrange.opacity(0.5), radius: 5, x: 0, y: 3)
             
-            NavigationLink(destination: RegistserView(loginModel: loginModel), isActive: $showRegister) {
+            NavigationLink(destination: RegisterView(loginModel: loginModel), isActive: $showRegister) {
                 EmptyView()
             }
 

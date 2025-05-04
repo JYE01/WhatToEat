@@ -78,7 +78,7 @@ struct HomeView: View {
         }
         NavigationLink(
             destination: loginModel.canLogin
-                ? AnyView(AccountView()) // display account if logged in
+                ? AnyView(AccountView(loginModel: loginModel)) // display account if logged in
                 : AnyView(LoginView(loginModel: loginModel)),
             isActive: $accountOrLogin
         ) {

@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct AccountView: View {
-    @AppStorage("userData") var currentUser: Data?
+    @ObservedObject var loginModel: LoginViewModel
+    @AppStorage("currentUser") var currentUser: Data?
+    @Environment(\.dismiss) var dismiss
     
     var user: User? {
             guard let currentUser = currentUser,
@@ -27,6 +29,10 @@ struct AccountView: View {
                     .font(.body)
                 Text("Password: \(user.password)")
                     .font(.body)
+                Button("Logout") {
+                    loginModel.reset()
+                    dismiss() //dismiss the view once logged out
+                }
             } else {
                 Text("No user data available.")
             }
@@ -38,5 +44,5 @@ struct AccountView: View {
 }
 
 #Preview {
-    AccountView()
+    AccountView(loginModel: LoginViewModel())
 }

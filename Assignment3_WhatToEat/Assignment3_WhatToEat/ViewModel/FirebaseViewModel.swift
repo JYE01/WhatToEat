@@ -9,7 +9,7 @@ import Foundation
 import FirebaseFirestore
 
 class FirestoreManager: ObservableObject {
-    private var db = Firestore.firestore()
+    @Published var db = Firestore.firestore()
     @Published var recipes: [Recipe] = []
     
     func fetchRecipes(completion: @escaping ([Recipe]) -> Void) {

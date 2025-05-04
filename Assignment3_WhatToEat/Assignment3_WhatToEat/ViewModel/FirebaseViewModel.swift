@@ -12,18 +12,20 @@ class FirestoreManager: ObservableObject {
     private var db = Firestore.firestore()
     @Published var recipes: [Recipe] = []
     
-    func fetchRecipes() {
-        db.collection("Recipes").addSnapshotListener { snapshot, error in //collection name is Recipes in firebase firestore/
-            if let error = error {
-                print("Error getting recipes: \(error)")
-                return
+    func fetchRecipes(completion: @escaping ([Recipe]) -> Void) {
+            let db = Firestore.firestore()
+            db.collection("Recipes").getDocuments { snapshot, error in
+                if let documents = snapshot?.documents {
+                    let recipes = documents.compactMap { doc in
+                        try? doc.data(as: Recipe.self)
+                    }
+                    completion(recipes)
+                } else {
+                    completion([])
+                }
             }
-
-            self.recipes = snapshot?.documents.compactMap { document in
-                try? document.data(as: Recipe.self)
-            } ?? []
-        }
     }
+    
     func fetchUser(byEmail email: String, completion: @escaping (User?) -> Void) {
         db.collection("Users") //collection name is Users in firebase firestore
             .whereField("email", isEqualTo: email)

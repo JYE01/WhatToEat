@@ -43,6 +43,14 @@ struct IngredientsView: View {
         .background(Color.appBackground)
         .navigationTitle("Your Ingredients")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink(destination: RecipeView()) {
+                    Text("Go")
+                        .foregroundColor(.appPrimaryOrange)
+                }
+            }
+        }
     }
 
     private func addIngredient() {

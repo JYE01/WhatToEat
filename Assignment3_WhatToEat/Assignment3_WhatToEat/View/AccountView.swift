@@ -11,35 +11,153 @@ struct AccountView: View {
     @ObservedObject var loginModel: LoginViewModel
     @AppStorage("currentUser") var currentUser: Data?
     @Environment(\.dismiss) var dismiss
-    
+
+    //Replace this placeholder with actual fetched favorite recipes for the user
+    @State private var favoriteRecipes: [Recipe] = [
+        Recipe(id: "fav1", name: "Spaghetti Bolognese", cuisine: "Italian", ingredients: [], description: "", image: "linktoimage"),
+        Recipe(id: "fav6", name: "More Favorites", cuisine: "Breakfast", ingredients: [], description: "", image: "linktoimage")
+    ]
+
     var user: User? {
-            guard let currentUser = currentUser,
-                  let user = try? JSONDecoder().decode(User.self, from: currentUser) else {
-                return nil
-            }
-            return user
+        guard let currentUser = currentUser,
+              let user = try? JSONDecoder().decode(User.self, from: currentUser) else {
+            return nil
         }
-    
+        return user
+    }
+
     var body: some View {
-        VStack {
-            if let user = user {
-                Text("Name: \(user.name)")
-                    .font(.title)
-                Text("Email: \(user.email)")
-                    .font(.body)
-                Text("Password: \(user.password)")
-                    .font(.body)
-                Button("Logout") {
-                    loginModel.reset()
-                    dismiss() //dismiss the view once logged out
+        ScrollView {
+            VStack(spacing: 20) {
+                if let user = user {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Image(systemName: "person.fill")
+                                .foregroundColor(.appPrimaryOrange)
+                            Text(user.name)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        HStack {
+                            Image(systemName: "envelope.fill")
+                                .foregroundColor(.appPrimaryOrange)
+                            Text(user.email)
+                                .font(.body)
+                                .foregroundColor(.appMutedText)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.appLightOrange.opacity(0.1))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+
+                    Divider().padding(.horizontal)
+
+                    Text("Favorite Recipes")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.appPrimaryOrange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.top)
+
+                    if favoriteRecipes.isEmpty {
+                         Text("You haven't favorited any recipes yet.")
+                             .foregroundColor(.appMutedText)
+                             .padding()
+                             .frame(maxWidth: .infinity)
+                    } else {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                             ForEach(favoriteRecipes) { recipe in
+                                 FavoriteRecipeCardView(recipe: recipe)
+                             }
+                         }
+                         .padding(.horizontal)
+                    }
+
+                    Spacer()
+
+                    Button("Logout") {
+                        loginModel.reset()
+                        currentUser = nil
+                        dismiss()
+                    }
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: 200)
+                    .background(Color.appPrimaryOrange)
+                    .clipShape(Capsule())
+                    .shadow(color: Color.appPrimaryOrange.opacity(0.4), radius: 5, x: 0, y: 3)
+                    .padding(.top, 30)
+                    .padding(.bottom)
+
+                } else {
+                    VStack {
+                        Spacer()
+                        Image(systemName: "person.crop.circle.badge.exclamationmark")
+                            .font(.system(size: 60))
+                            .foregroundColor(.appMutedText)
+                        Text("No user data available.")
+                            .font(.title3)
+                            .foregroundColor(.appMutedText)
+                            .padding(.top)
+                        Text("Please login or create an account.")
+                             .font(.subheadline)
+                             .foregroundColor(.appMutedText)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
                 }
-            } else {
-                Text("No user data available.")
             }
         }
-        .padding()
+        .background(Color.appBackground.edgesIgnoringSafeArea(.all))
         .navigationTitle("Account")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            //Add function to fetch favorite recipes when the view appears
+        }
+    }
+}
+
+struct FavoriteRecipeCardView: View {
+    let recipe: Recipe
+
+    var body: some View {
+        Button {
+            // ADD NAVIGATION LINK TO THE RECIPE HERE
+            print("Tapped on recipe: \(recipe.name)")
+        } label: {
+            VStack(alignment: .leading) {
+                AsyncImage(url: URL(string: recipe.image)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.appLightOrange.opacity(0.2)
+                        .overlay(Image(systemName: "photo").foregroundColor(.appMutedText))
+                }
+                .frame(height: 100)
+                .clipped()
+
+                Text(recipe.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .foregroundColor(Color.appText)
+                    .padding([.horizontal, .bottom], 8)
+                    .padding(.top, 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
+            }
+        }
+        .buttonStyle(.plain)
+        .background(Color.appBackground)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
     }
 }
 

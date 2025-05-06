@@ -27,7 +27,7 @@ struct HomeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 25))
                 .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
 
-            Text("Recipe Finder")
+            Text("What-To-Eat")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.appPrimaryOrange) //

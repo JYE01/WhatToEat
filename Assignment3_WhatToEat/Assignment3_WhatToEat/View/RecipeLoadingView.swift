@@ -1,3 +1,4 @@
+// RecipeLoadingView.swift
 //
 //  RecipeLoadingView.swift
 //  Assignment3_WhatToEat
@@ -8,11 +9,8 @@
 import SwiftUI
 
 struct RecipeLoadingView: View {
-    @State private var navigateToRecipeView = false
     @State private var isAnimating = false
-    
-    @Binding var showLoading: Bool
-    @Binding var showRecipeView: Bool
+    var onFinishedLoading: () -> Void
     
     let animationDuration: Double = 0.8
 
@@ -52,25 +50,12 @@ struct RecipeLoadingView: View {
                             value: isAnimating
                         )
                 }
-                .fullScreenCover(isPresented: $showRecipeView) {
-                    RecipeView(showRecipeView: $showRecipeView)
-                }
-                .onAppear {
-                    isAnimating = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        showLoading = false
-                        showRecipeView = true
-                    }
-                }
             }
         }
-        .navigationTitle("Loading")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             isAnimating = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                navigateToRecipeView = true
+                self.onFinishedLoading()
             }
         }
     }
@@ -78,10 +63,7 @@ struct RecipeLoadingView: View {
 
 struct RecipeLoadingView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
-            RecipeLoadingView(showLoading: .constant(true), showRecipeView: .constant(false))
-        }
-         .preferredColorScheme(.light)
-
+        RecipeLoadingView(onFinishedLoading: { print("Loading finished in preview") })
+            .preferredColorScheme(.light)
     }
 }

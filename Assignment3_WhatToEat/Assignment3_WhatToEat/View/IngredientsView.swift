@@ -1,3 +1,4 @@
+// IngredientsView.swift
 //
 //  IngredientsView.swift
 //  Assignment3_WhatToEat
@@ -7,13 +8,17 @@
 
 import SwiftUI
 
-// Ingredients View
+enum RecipeNavigationState {
+    case none
+    case loading
+    case showingRecipes
+}
+
 struct IngredientsView: View {
-    @AppStorage("ingredientStorage") var ingredientStorage: String = "" //app storage to temporarily store the ingredients
+    @AppStorage("ingredientStorage") var ingredientStorage: String = ""
     @State private var ingredients: [String] = []
     @State private var newIngredient: String = ""
-    @State private var showLoading = false
-    @State private var showRecipes = false
+    @State private var recipeNavigationState: RecipeNavigationState = .none
 
     var body: some View {
         VStack {
@@ -48,15 +53,33 @@ struct IngredientsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Go") {
-                    showLoading = true
+                    recipeNavigationState = .loading
                 }
                 .foregroundColor(.appPrimaryOrange)
-                .fullScreenCover(isPresented: $showLoading) {
-                    RecipeLoadingView(showLoading: $showLoading, showRecipeView: $showRecipes)
-                }
-                .fullScreenCover(isPresented: $showRecipes) {
-                    RecipeView(showRecipeView: $showRecipes)
-                }
+            }
+        }
+        .fullScreenCover(
+            isPresented: Binding<Bool>(
+                get: { recipeNavigationState == .loading || recipeNavigationState == .showingRecipes },
+                set: { if !$0 { recipeNavigationState = .none } }
+            )
+        ) {
+            switch recipeNavigationState {
+            case .loading:
+                RecipeLoadingView(
+                    onFinishedLoading: {
+                        self.recipeNavigationState = .showingRecipes
+                    }
+                )
+            case .showingRecipes:
+                RecipeView(
+                    showRecipeView: Binding<Bool>(
+                        get: { self.recipeNavigationState == .showingRecipes },
+                        set: { if !$0 { self.recipeNavigationState = .none } }
+                    )
+                )
+            case .none:
+                EmptyView()
             }
         }
     }
@@ -66,13 +89,13 @@ struct IngredientsView: View {
         if !trimmedIngredient.isEmpty {
             ingredients.append(trimmedIngredient)
             newIngredient = ""
-            saveIngredients() //save to app storage after add
+            saveIngredients()
         }
     }
 
     private func removeIngredient(at offsets: IndexSet) {
         ingredients.remove(atOffsets: offsets)
-        saveIngredients() //save to app storage after remove
+        saveIngredients()
     }
     
     private func saveIngredients() {
@@ -90,7 +113,6 @@ struct IngredientsView: View {
     }
 }
 
-// Preview
 struct IngredientsView_Previews: PreviewProvider {
      static var previews: some View {
          NavigationStack {

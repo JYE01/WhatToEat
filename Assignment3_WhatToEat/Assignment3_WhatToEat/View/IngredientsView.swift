@@ -12,6 +12,8 @@ struct IngredientsView: View {
     @AppStorage("ingredientStorage") var ingredientStorage: String = "" //app storage to temporarily store the ingredients
     @State private var ingredients: [String] = []
     @State private var newIngredient: String = ""
+    @State private var showLoading = false
+    @State private var showRecipes = false
 
     var body: some View {
         VStack {
@@ -45,9 +47,15 @@ struct IngredientsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: RecipeView()) {
-                    Text("Go")
-                        .foregroundColor(.appPrimaryOrange)
+                Button("Go") {
+                    showLoading = true
+                }
+                .foregroundColor(.appPrimaryOrange)
+                .fullScreenCover(isPresented: $showLoading) {
+                    RecipeLoadingView(showLoading: $showLoading, showRecipeView: $showRecipes)
+                }
+                .fullScreenCover(isPresented: $showRecipes) {
+                    RecipeView(showRecipeView: $showRecipes)
                 }
             }
         }

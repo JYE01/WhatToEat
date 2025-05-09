@@ -9,8 +9,8 @@ import SwiftUI
 
 struct RecipeView: View {
     @ObservedObject private var recipeViewModel = RecipeViewModel()
-
     @State private var selectedCuisine: String = "All"
+    @Binding var showRecipeView: Bool
 
     private var availableCuisines: [String] {
         let cuisines = recipeViewModel.filteredRecipes.map { $0.cuisine }
@@ -87,11 +87,21 @@ struct RecipeView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Recipes")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showRecipeView = false
+                    }) {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                }
+            }
         }
     }
 }
 
 
 #Preview {
-    RecipeView()
+    RecipeView(showRecipeView: .constant(true))
 }

@@ -10,6 +10,10 @@ import SwiftUI
 struct RecipeLoadingView: View {
     @State private var navigateToRecipeView = false
     @State private var isAnimating = false
+    
+    @Binding var showLoading: Bool
+    @Binding var showRecipeView: Bool
+    
     let animationDuration: Double = 0.8
 
     var body: some View {
@@ -48,9 +52,15 @@ struct RecipeLoadingView: View {
                             value: isAnimating
                         )
                 }
-
-                NavigationLink(destination: RecipeView(), isActive: $navigateToRecipeView) {
-                    EmptyView()
+                .fullScreenCover(isPresented: $showRecipeView) {
+                    RecipeView(showRecipeView: $showRecipeView)
+                }
+                .onAppear {
+                    isAnimating = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        showLoading = false
+                        showRecipeView = true
+                    }
                 }
             }
         }
@@ -69,7 +79,7 @@ struct RecipeLoadingView: View {
 struct RecipeLoadingView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            RecipeLoadingView()
+            RecipeLoadingView(showLoading: .constant(true), showRecipeView: .constant(false))
         }
          .preferredColorScheme(.light)
 

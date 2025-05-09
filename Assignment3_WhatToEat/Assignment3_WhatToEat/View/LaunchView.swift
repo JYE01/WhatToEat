@@ -10,7 +10,7 @@ import SwiftUI
 // Spinning Logo View
 struct LaunchView: View {
     @State private var rotationAngle: Double = 0
-    let logoName: String = "1"
+    let logoName: String = "logo"
     let frameSize: CGFloat? = 150
 
     var body: some View {

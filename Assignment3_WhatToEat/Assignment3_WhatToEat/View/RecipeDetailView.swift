@@ -14,16 +14,12 @@ struct RecipeDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Image
-                AsyncImage(url: URL(string: recipe.image)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.gray.opacity(0.3)
-                }
-                .frame(height: 240)
-                .clipped()
-                .cornerRadius(10)
+                Image(recipe.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 180)
+                    .clipped()
+                    .cornerRadius(10)
 
                 // Name & Cuisine
                 Text(recipe.name)

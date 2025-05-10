@@ -3,89 +3,78 @@
 //  IngredientsView.swift
 //  Assignment3_WhatToEat
 //
-//  Created by Aranth Tjandra on 1/5/2025.
+//  Created by Felix on 1/5/2025.
 //
 
 import SwiftUI
 
-// Ingredients View
+// The main view that allows users to add ingredients and navigate to filtered recipes
 struct IngredientsView: View {
-    @AppStorage("ingredientStorage") var ingredientStorage: String = "" //app storage to temporarily store the ingredients
-    @State private var ingredients: [String] = []
-    @State private var newIngredient: String = ""
+    @StateObject private var viewModel = IngredientsViewModel() // ViewModel manages all logic and data
 
     var body: some View {
-        VStack {
-            List {
-                ForEach(ingredients, id: \.self) { ingredient in
-                    Text(ingredient)
-                        .foregroundColor(Color.appText)
+        NavigationStack {
+            VStack {
+                // List of current ingredients added by the user
+                List {
+                    ForEach(viewModel.ingredients, id: \.self) { ingredient in
+                        Text(ingredient)
+                            .foregroundColor(Color.appText) // Custom color for app theme
+                    }
+                    .onDelete(perform: viewModel.removeIngredient) // Swipe to delete functionality
                 }
-                .onDelete(perform: removeIngredient)
-            }
-            .listStyle(.plain)
+                .listStyle(.plain) // Use a plain list style for cleaner appearance
 
-            HStack {
-                TextField("Add ingredient...", text: $newIngredient)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(addIngredient)
-                    .submitLabel(.done)
+                // Input field and button to add new ingredients
+                HStack {
+                    // Text field for user to type a new ingredient
+                    TextField("Add ingredient...", text: $viewModel.newIngredient)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit { viewModel.addIngredient() } // Add ingredient on return key
+                        .submitLabel(.done)
 
-                Button(action: addIngredient) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.appPrimaryOrange)
-                }
-                .disabled(newIngredient.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            .padding()
-        }
-        .onAppear(perform: loadIngredients)
-        .background(Color.appBackground)
-        .navigationTitle("Your Ingredients")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if !ingredients.isEmpty {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: RecipeView()) {
-                        Text("Go")
+                    // Plus button to trigger addIngredient function
+                    Button(action: { viewModel.addIngredient() }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
                             .foregroundColor(.appPrimaryOrange)
+                    }
+                    .disabled(viewModel.newIngredient.trimmingCharacters(in: .whitespaces).isEmpty) // Disable button if input is empty
+                }
+                .padding()
+
+                // Navigation to RecipeView triggered programmatically
+                NavigationLink(destination: RecipeView(), isActive: $viewModel.navigateToRecipes) {
+                    EmptyView() // Invisible link triggered by state
+                }
+            }
+            .background(Color.appBackground) // App-themed background
+            .navigationTitle("Your Ingredients")
+            .navigationBarTitleDisplayMode(.inline)
+
+            // Toolbar with "Go" button to start loading and view recipes
+            .toolbar {
+                if !viewModel.ingredients.isEmpty {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { viewModel.startLoadingSequence() }) {
+                            Text("Go")
+                                .foregroundColor(.appPrimaryOrange)
+                        }
                     }
                 }
             }
-        }
-    }
 
-    private func addIngredient() {
-        let trimmedIngredient = newIngredient.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedIngredient.isEmpty {
-            ingredients.append(trimmedIngredient)
-            newIngredient = ""
-            saveIngredients() //save to app storage after add
-        }
-    }
-
-    private func removeIngredient(at offsets: IndexSet) {
-        ingredients.remove(atOffsets: offsets)
-        saveIngredients() //save to app storage after remove
-    }
-    
-    private func saveIngredients() {
-        if let data = try? JSONEncoder().encode(ingredients),
-            let json = String(data: data, encoding: .utf8) {
-            ingredientStorage = json
-        }
-    }
-
-    private func loadIngredients() {
-        if let data = ingredientStorage.data(using: .utf8),
-            let decoded = try? JSONDecoder().decode([String].self, from: data) {
-            ingredients = decoded
+            // Fullscreen loading screen overlay (not in nav stack)
+            .fullScreenCover(isPresented: $viewModel.showLoading) {
+                RecipeLoadingView {
+                    viewModel.finishLoadingSequence() // Called after loading completes
+                }
+            }
         }
     }
 }
 
-// Preview
+// Previews in both light and dark modes
 struct IngredientsView_Previews: PreviewProvider {
      static var previews: some View {
          NavigationStack {

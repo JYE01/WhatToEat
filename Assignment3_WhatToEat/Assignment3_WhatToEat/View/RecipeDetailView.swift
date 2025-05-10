@@ -52,27 +52,27 @@ struct RecipeDetailView: View {
                     Button(action: {
                         if let recipeID = recipe.id {
                             firestoreManager.fetchUser(byEmail: userEmail) { user in
-                                if let user = user, let userID = user.id {
-                                    if isFavourite {
-                                        firestoreManager.removeFavourite(forUserID: userID, recipeID: recipeID) { success in
-                                            if success {
-                                                isFavourite = false
-                                            } else {
-                                                print("Failed to remove from favourites")
-                                            }
-                                        }
-                                    } else {
-                                        firestoreManager.addFavourite(forUserID: userID, recipeID: recipeID) { success in
-                                            if success {
-                                                isFavourite = true
-                                            } else {
-                                                print("Failed to add to favourites")
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    print("User not found or userID is nil")
-                                }
+//                                if let user = user, let userID = user.id {
+//                                    if isFavourite {
+//                                        firestoreManager.removeFavourite(forUserID: userID, recipeID: recipeID) { success in
+//                                            if success {
+//                                                isFavourite = false
+//                                            } else {
+//                                                print("Failed to remove from favourites")
+//                                            }
+//                                        }
+//                                    } else {
+//                                        firestoreManager.addFavourite(forUserID: userID, recipeID: recipeID) { success in
+//                                            if success {
+//                                                isFavourite = true
+//                                            } else {
+//                                                print("Failed to add to favourites")
+//                                            }
+//                                        }
+//                                    }
+//                                } else {
+//                                    print("User not found or userID is nil")
+//                                }
                             }
                         } else {
                             print("recipe id is nil")
@@ -109,19 +109,19 @@ struct RecipeDetailView: View {
             .padding()
         }
         .onAppear {
-            if let recipeID = recipe.id {
-                firestoreManager.fetchUser(byEmail: userEmail) { user in
-                    if let user = user, let userID = user.id {
-                        firestoreManager.FavouriteRecipe(byUserID: userID, recipeID: recipeID) { fav in
-                            isFavourite = fav
-                        }
-                    } else {
-                        print("User not found or userID is nil")
-                    }
-                }
-            } else {
-                print("recipe.id is nil")
-            }
+//            if let recipeID = recipe.id {
+//                firestoreManager.fetchUser(byEmail: userEmail) { user in
+//                    if let user = user, let userID = user.id {
+//                        firestoreManager.FavouriteRecipe(byUserID: userID, recipeID: recipeID) { fav in
+//                            isFavourite = fav
+//                        }
+//                    } else {
+//                        print("User not found or userID is nil")
+//                    }
+//                }
+//            } else {
+//                print("recipe.id is nil")
+//            }
         }
         .navigationTitle("Recipe Detail")
         .navigationBarTitleDisplayMode(.inline)

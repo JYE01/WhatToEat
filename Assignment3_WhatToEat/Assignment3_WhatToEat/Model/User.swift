@@ -5,10 +5,12 @@
 //  Created by Junhui Ye on 3/5/2025.
 //
 
-import Foundation
+import FirebaseFirestore
 
 struct User: Codable {
+    @DocumentID var id : String?
     let email: String
     let password: String
     let name: String
+    var favourites: [String] = []
 }

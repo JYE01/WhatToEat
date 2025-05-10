@@ -50,4 +50,41 @@ class FirestoreManager: ObservableObject {
                 }
             }
     }
+    
+    func addFavourite(forUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users").document(userID).updateData([
+            "favourites": FieldValue.arrayUnion([recipeID])
+        ]) { error in
+            completion(error == nil)
+        }
+    }
+    
+    func removeFavourite(forUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users").document(userID).updateData([
+            "favourites": FieldValue.arrayRemove([recipeID])
+        ]) { error in
+            completion(error == nil)
+        }
+    }
+
+    func FavouriteRecipe(byUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users").document(userID).getDocument { document, error in
+            if let error = error {
+                print("Error fetching user document: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            guard let document = document, document.exists else {
+                completion(false)
+                return
+            }
+
+            if let favourites = document.data()?["favourites"] as? [String] {
+                completion(favourites.contains(recipeID))
+            } else {
+                completion(false)
+            }
+        }
+    }
 }

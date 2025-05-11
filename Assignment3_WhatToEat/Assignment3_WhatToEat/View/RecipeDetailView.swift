@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @State private var isFavourite = false
-    @AppStorage("userEmail") var userEmail: String = "" //app storage to store user email
+    @AppStorage("currentUser") var currentUser: Data? //user current user instead of userEmail.
     @ObservedObject var firestoreManager = FirestoreManager()
     
     let recipe: Recipe
@@ -50,32 +50,29 @@ struct RecipeDetailView: View {
                     Spacer()
 
                     Button(action: {
-                        if let recipeID = recipe.id {
-                            firestoreManager.fetchUser(byEmail: userEmail) { user in
-//                                if let user = user, let userID = user.id {
-//                                    if isFavourite {
-//                                        firestoreManager.removeFavourite(forUserID: userID, recipeID: recipeID) { success in
-//                                            if success {
-//                                                isFavourite = false
-//                                            } else {
-//                                                print("Failed to remove from favourites")
-//                                            }
-//                                        }
-//                                    } else {
-//                                        firestoreManager.addFavourite(forUserID: userID, recipeID: recipeID) { success in
-//                                            if success {
-//                                                isFavourite = true
-//                                            } else {
-//                                                print("Failed to add to favourites")
-//                                            }
-//                                        }
-//                                    }
-//                                } else {
-//                                    print("User not found or userID is nil")
-//                                }
+                        guard let data = currentUser,
+                              let user = try? JSONDecoder().decode(User.self, from: data),
+                              let recipeID = recipe.id else {
+                            print("Invalid user data or recipe id")
+                            return
+                        }
+
+                        if isFavourite {
+                            firestoreManager.removeFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
+                                if success {
+                                    isFavourite = false
+                                } else {
+                                    print("Failed to remove from favourites")
+                                }
                             }
                         } else {
-                            print("recipe id is nil")
+                            firestoreManager.addFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
+                                if success {
+                                    isFavourite = true
+                                } else {
+                                    print("Failed to add to favourites")
+                                }
+                            }
                         }
                     }) {
                         Image(systemName: isFavourite ? "heart.fill" : "heart")
@@ -83,8 +80,8 @@ struct RecipeDetailView: View {
                             .frame(width: 24, height: 24)
                             .foregroundColor(.red)
                     }
+
                 }
-                
                 // Ingredients
                 Text("Ingredients")
                     .font(.title2)
@@ -109,19 +106,16 @@ struct RecipeDetailView: View {
             .padding()
         }
         .onAppear {
-//            if let recipeID = recipe.id {
-//                firestoreManager.fetchUser(byEmail: userEmail) { user in
-//                    if let user = user, let userID = user.id {
-//                        firestoreManager.FavouriteRecipe(byUserID: userID, recipeID: recipeID) { fav in
-//                            isFavourite = fav
-//                        }
-//                    } else {
-//                        print("User not found or userID is nil")
-//                    }
-//                }
-//            } else {
-//                print("recipe.id is nil")
-//            }
+            guard let data = currentUser,
+                  let user = try? JSONDecoder().decode(User.self, from: data),
+                  let recipeID = recipe.id else {
+                print("Invalid user data or recipe id")
+                return
+            }
+
+            firestoreManager.isFavourite(forEmail: user.email, recipeID: recipeID) { fav in
+                isFavourite = fav
+            }
         }
         .navigationTitle("Recipe Detail")
         .navigationBarTitleDisplayMode(.inline)

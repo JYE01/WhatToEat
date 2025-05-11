@@ -9,14 +9,12 @@ import SwiftUI
 
 struct AccountView: View {
     @ObservedObject var loginModel: LoginViewModel
+    @ObservedObject private var firestoreManager = FirestoreManager()
     @AppStorage("currentUser") var currentUser: Data?
     @Environment(\.dismiss) var dismiss
 
     //Replace this placeholder with actual fetched favorite recipes for the user
-    @State private var favoriteRecipes: [Recipe] = [
-        Recipe(id: "fav1", name: "Spaghetti Bolognese", cuisine: "Italian", ingredients: [], description: "", image: "linktoimage"),
-        Recipe(id: "fav6", name: "More Favorites", cuisine: "Breakfast", ingredients: [], description: "", image: "linktoimage")
-    ]
+    @State private var favoriteRecipes: [Recipe] = []
 
     var user: User? {
         guard let currentUser = currentUser,
@@ -118,7 +116,13 @@ struct AccountView: View {
         .navigationTitle("Account")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            //Add function to fetch favorite recipes when the view appears
+            if let email = user?.email {
+                firestoreManager.fetchFavouriteRecipes(forEmail: email) { fetchedRecipes in
+                    DispatchQueue.main.async {
+                        self.favoriteRecipes = fetchedRecipes
+                    }
+                }
+            }
         }
     }
 }

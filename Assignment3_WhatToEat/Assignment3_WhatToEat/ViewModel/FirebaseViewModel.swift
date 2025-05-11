@@ -51,40 +51,121 @@ class FirestoreManager: ObservableObject {
             }
     }
     
-    func addFavourite(forUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
-        db.collection("Users").document(userID).updateData([
-            "favourites": FieldValue.arrayUnion([recipeID])
-        ]) { error in
-            completion(error == nil)
-        }
+    func addFavourite(forUserEmail email: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users")
+            .whereField("email", isEqualTo: email)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                guard let document = snapshot?.documents.first else {
+                    print("User with email \(email) not found.")
+                    completion(false)
+                    return
+                }
+
+                document.reference.updateData([
+                    "favourites": FieldValue.arrayUnion([recipeID]) //add the recipe ID to the favourites array in firebase
+                ]) { error in
+                    completion(error == nil)
+                }
+            }
+    }
+
+    func removeFavourite(forUserEmail email: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users")
+            .whereField("email", isEqualTo: email)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                guard let document = snapshot?.documents.first else {
+                    print("User with email \(email) not found.")
+                    completion(false)
+                    return
+                }
+
+                document.reference.updateData([
+                    "favourites": FieldValue.arrayRemove([recipeID])
+                ]) { error in
+                    completion(error == nil)
+                }
+            }
+    }
+
+    func isFavourite(forEmail email: String, recipeID: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users")
+            .whereField("email", isEqualTo: email)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                guard let document = snapshot?.documents.first else {
+                    print("User with email \(email) not found.")
+                    completion(false)
+                    return
+                }
+
+                if let favourites = document.data()["favourites"] as? [String] {
+                    completion(favourites.contains(recipeID))
+                } else {
+                    completion(false)
+                }
+            }
     }
     
-    func removeFavourite(forUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
-        db.collection("Users").document(userID).updateData([
-            "favourites": FieldValue.arrayRemove([recipeID])
-        ]) { error in
-            completion(error == nil)
-        }
-    }
+    func fetchFavouriteRecipes(forEmail email: String, completion: @escaping ([Recipe]) -> Void) {
+        db.collection("Users")
+            .whereField("email", isEqualTo: email)
+            .getDocuments { [self] snapshot, error in
+                guard let document = snapshot?.documents.first else {
+                    print("No user document found or error: \(error?.localizedDescription ?? "Unknown error")")
+                    completion([])
+                    return
+                }
 
-    func FavouriteRecipe(byUserID userID: String, recipeID: String, completion: @escaping (Bool) -> Void) {
-        db.collection("Users").document(userID).getDocument { document, error in
-            if let error = error {
-                print("Error fetching user document: \(error.localizedDescription)")
-                completion(false)
-                return
-            }
+                guard let favouriteIDs = document.data()["favourites"] as? [String], !favouriteIDs.isEmpty else {
+                    completion([])
+                    return
+                }
+                
+                print("Fetching recipes for IDs: \(favouriteIDs)") // this is the array for recipes ID in favourites array of user
+                
+                let recipeRefs = favouriteIDs.map { db.collection("Recipes").document($0) } //favourite ID will be mapped to document ID of Recipes collection
+                var fetchedRecipes: [Recipe] = [] //will store the favourite recipe
+                let group = DispatchGroup()
 
-            guard let document = document, document.exists else {
-                completion(false)
-                return
-            }
+                for ref in recipeRefs {
+                    group.enter() //start async task
+                    ref.getDocument { document, error in
+                        defer { group.leave() } //async task finishes
 
-            if let favourites = document.data()?["favourites"] as? [String] {
-                completion(favourites.contains(recipeID))
-            } else {
-                completion(false)
+                        if let document = document, document.exists {
+                            do {
+                                let recipe = try document.data(as: Recipe.self)
+                                fetchedRecipes.append(recipe)
+                                print("Fetched recipe: \(recipe)")
+                            } catch {
+                                print("Decoding error for document ID \(document.documentID): \(error)")
+                            }
+                        } else {
+                            print("No document found for ID: \(ref.documentID)")
+                        }
+                    }
+                }
+
+                group.notify(queue: .main) {
+                    completion(fetchedRecipes)
+                }
             }
-        }
     }
 }

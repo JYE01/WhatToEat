@@ -8,7 +8,6 @@
 import FirebaseFirestore
 
 struct User: Codable {
-//    @DocumentID var id : String?
     let email: String
     let password: String
     let name: String

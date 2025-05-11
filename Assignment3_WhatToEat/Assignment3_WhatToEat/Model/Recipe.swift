@@ -7,7 +7,7 @@
 
 import FirebaseFirestore
 
-struct Recipe: Identifiable, Codable{
+struct Recipe: Identifiable, Codable, Hashable{
     @DocumentID var id : String?
     var name : String
     var cuisine : String

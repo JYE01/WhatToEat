@@ -17,6 +17,8 @@ class RecipeViewModel: ObservableObject {
     
     // All recipes fetched from Firestore
     @Published var allRecipes: [Recipe] = []
+    
+    @Published var isDataReady: Bool = false
  
     // Stored JSON string of selected ingredients from AppStorage
     private var ingredientStorage: String {
@@ -32,11 +34,13 @@ class RecipeViewModel: ObservableObject {
     }
  
     // Fetch all recipes from Firestore, then apply initial filtering
-    func fetchRecipes() {
+    func fetchRecipes(completion: (() -> Void)? = nil) {
         firestoreManager.fetchRecipes { [weak self] recipes in
             DispatchQueue.main.async {
                 self?.allRecipes = recipes
                 self?.filterRecipes()
+                self?.isDataReady = true
+                completion?()
             }
         }
     }
@@ -47,18 +51,28 @@ class RecipeViewModel: ObservableObject {
         var word = ingredient
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
- 
-        // Remove "es" if it ends with it (e.g., tomatoes -> tomato)
-        if word.hasSuffix("es") {
-            word = String(word.dropLast(2))
+
+        // Special plural endings
+        if word.hasSuffix("ies") {
+            return String(word.dropLast(3)) + "y"  // berries → berry
+        } else if word.hasSuffix("oes") || word.hasSuffix("ches") || word.hasSuffix("shes") || word.hasSuffix("xes") {
+            return String(word.dropLast(2))        // tomatoes → tomato, dishes → dish
+        } else if word.hasSuffix("es") {
+            // only remove 'es' if the word ends in a known pattern
+            let exceptions = ["noodles", "vegetables", "apples", "grapes", "candies", "berries"]
+            if exceptions.contains(word) {
+                return String(word.dropLast(1))  // noodles → noodle, apples → apple
+            } else {
+                return String(word.dropLast(2))  // buses → bus
+            }
+        } else if word.hasSuffix("s") && word.count > 3 {
+            return String(word.dropLast(1))      // onions → onion
         }
-        // Remove "s" if it ends with it (e.g., onions -> onion)
-        else if word.hasSuffix("s") {
-            word = String(word.dropLast(1))
-        }
- 
+
         return word
     }
+
+
  
     // Filters recipes based on selected ingredients.
     // A recipe is included if at least one of the normalized selected ingredients
@@ -66,10 +80,10 @@ class RecipeViewModel: ObservableObject {
     func filterRecipes() {
         // Decode selected ingredients from JSON stored in AppStorage
         guard let data = ingredientStorage.data(using: .utf8),
-              let selectedIngredients = try? JSONDecoder().decode([String].self, from: data),
-              !selectedIngredients.isEmpty else {
-            self.filteredRecipes = allRecipes
-            return
+                  let selectedIngredients = try? JSONDecoder().decode([String].self, from: data),
+                  !selectedIngredients.isEmpty else {
+                self.filteredRecipes = allRecipes
+                return
         }
  
         // Normalize the selected ingredients to their base form
@@ -77,8 +91,8 @@ class RecipeViewModel: ObservableObject {
  
         // Filter recipes that contain at least one of the selected ingredients
         self.filteredRecipes = allRecipes.filter { recipe in
-            let normalizedRecipeIngredients = recipe.ingredients.map(normalize)
-            return normalizedSelected.contains { normalizedRecipeIngredients.contains($0) }
+                let normalizedRecipeIngredients = recipe.ingredients.map(normalize)
+                return normalizedSelected.contains { normalizedRecipeIngredients.contains($0) }
         }
     }
  
@@ -93,14 +107,17 @@ class RecipeViewModel: ObservableObject {
  
     // Finds selected ingredients that are not used in any recipe, after normalizing both the recipe ingredients and user input.
     var unmatchedIngredients: [String] {
-        // Collect and normalize all ingredients across all recipes
+        // Normalize all recipe ingredients
         let allNormalizedIngredients = allRecipes
             .flatMap { $0.ingredients }
             .map(normalize)
- 
-        // Return selected ingredients that don’t exist in any recipe's ingredient list
-        return selectedIngredients.filter {
-            !allNormalizedIngredients.contains(normalize($0))
+
+        // Normalize user ingredients
+        let normalizedUserIngredients = selectedIngredients.map(normalize)
+
+        // Find unmatched ingredients by comparing normalized user input with normalized recipe data
+        return normalizedUserIngredients.filter {
+            !allNormalizedIngredients.contains($0)
         }
     }
 }

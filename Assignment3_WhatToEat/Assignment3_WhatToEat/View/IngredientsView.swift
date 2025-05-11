@@ -10,53 +10,64 @@ import SwiftUI
 
 // The main view that allows users to add ingredients and navigate to filtered recipes
 struct IngredientsView: View {
-    @StateObject private var viewModel = IngredientsViewModel() // ViewModel manages all logic and data
+    @StateObject private var viewModel = IngredientsViewModel() // ViewModel manages logic and state
 
     var body: some View {
         NavigationStack {
             VStack {
-                // List of current ingredients added by the user
+                // --- Ingredients List ---
                 List {
                     ForEach(viewModel.ingredients, id: \.self) { ingredient in
                         Text(ingredient)
-                            .foregroundColor(Color.appText) // Custom color for app theme
+                            .foregroundColor(Color.appText)
                     }
-                    .onDelete(perform: viewModel.removeIngredient) // Swipe to delete functionality
+                    .onDelete(perform: viewModel.removeIngredient)
                 }
-                .listStyle(.plain) // Use a plain list style for cleaner appearance
+                .listStyle(.plain)
 
-                // Input field and button to add new ingredients
+                // --- Add Ingredient Input Field and Button ---
                 HStack {
-                    // Text field for user to type a new ingredient
                     TextField("Add ingredient...", text: $viewModel.newIngredient)
                         .textFieldStyle(.roundedBorder)
-                        .onSubmit { viewModel.addIngredient() } // Add ingredient on return key
+                        .onSubmit { viewModel.addIngredient() }
                         .submitLabel(.done)
 
-                    // Plus button to trigger addIngredient function
                     Button(action: { viewModel.addIngredient() }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                             .foregroundColor(.appPrimaryOrange)
                     }
-                    .disabled(viewModel.newIngredient.trimmingCharacters(in: .whitespaces).isEmpty) // Disable button if input is empty
+                    .disabled(viewModel.newIngredient.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
                 .padding()
 
-                // Navigation to RecipeView triggered programmatically
-                NavigationLink(destination: RecipeView(), isActive: $viewModel.navigateToRecipes) {
-                    EmptyView() // Invisible link triggered by state
-                }
+                // --- Navigation Trigger to RecipeView ---
+                NavigationLink(
+                    isActive: $viewModel.navigateToRecipes,
+                    destination: {
+                        if let recipeVM = viewModel.recipeViewModel {
+                            RecipeView(recipeViewModel: recipeVM)
+                        } else {
+                            EmptyView()
+                        }
+                    },
+                    label: {
+                        EmptyView()
+                    }
+                )
+                
             }
-            .background(Color.appBackground) // App-themed background
+            .background(Color.appBackground)
             .navigationTitle("Your Ingredients")
             .navigationBarTitleDisplayMode(.inline)
 
-            // Toolbar with "Go" button to start loading and view recipes
+            // --- Toolbar with "Go" button to start loading and fetch recipes ---
             .toolbar {
                 if !viewModel.ingredients.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: { viewModel.startLoadingSequence() }) {
+                        Button(action: {
+                            viewModel.startLoadingSequence()
+                        }) {
                             Text("Go")
                                 .foregroundColor(.appPrimaryOrange)
                         }
@@ -64,15 +75,16 @@ struct IngredientsView: View {
                 }
             }
 
-            // Fullscreen loading screen overlay (not in nav stack)
+            // --- Fullscreen loading screen shown while fetching recipes ---
             .fullScreenCover(isPresented: $viewModel.showLoading) {
                 RecipeLoadingView {
-                    viewModel.finishLoadingSequence() // Called after loading completes
+                    viewModel.finishLoadingSequence()
                 }
             }
         }
     }
 }
+
 
 // Previews in both light and dark modes
 struct IngredientsView_Previews: PreviewProvider {

@@ -135,16 +135,11 @@ struct FavoriteRecipeCardView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: recipe.image)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Color.appLightOrange.opacity(0.2)
-                    .overlay(Image(systemName: "photo").foregroundColor(.appMutedText))
-            }
-            .frame(height: 100)
-            .clipped()
+            Image(recipe.image) // Use the name stored in the `image` field
+                .resizable()
+                .scaledToFill()
+                .frame(height: 100)
+                .clipped()
 
             Text(recipe.name)
                 .font(.headline)
@@ -160,6 +155,7 @@ struct FavoriteRecipeCardView: View {
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
     }
+
 }
 
 #Preview {

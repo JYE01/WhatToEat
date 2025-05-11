@@ -67,11 +67,14 @@ struct AccountView: View {
                              .frame(maxWidth: .infinity)
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                             ForEach(favoriteRecipes) { recipe in
-                                 FavoriteRecipeCardView(recipe: recipe)
-                             }
-                         }
-                         .padding(.horizontal)
+                            ForEach(favoriteRecipes) { recipe in
+                                NavigationLink(destination: RecipeDetailView(recipe: recipe)) { // this will navigate to recipe detail view fore each recipe card
+                                    FavoriteRecipeCardView(recipe: recipe)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+
                     }
 
                     Spacer()
@@ -131,34 +134,28 @@ struct FavoriteRecipeCardView: View {
     let recipe: Recipe
 
     var body: some View {
-        Button {
-            // ADD NAVIGATION LINK TO THE RECIPE HERE
-            print("Tapped on recipe: \(recipe.name)")
-        } label: {
-            VStack(alignment: .leading) {
-                AsyncImage(url: URL(string: recipe.image)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.appLightOrange.opacity(0.2)
-                        .overlay(Image(systemName: "photo").foregroundColor(.appMutedText))
-                }
-                .frame(height: 100)
-                .clipped()
-
-                Text(recipe.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .foregroundColor(Color.appText)
-                    .padding([.horizontal, .bottom], 8)
-                    .padding(.top, 4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
+        VStack(alignment: .leading) {
+            AsyncImage(url: URL(string: recipe.image)) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                Color.appLightOrange.opacity(0.2)
+                    .overlay(Image(systemName: "photo").foregroundColor(.appMutedText))
             }
+            .frame(height: 100)
+            .clipped()
+
+            Text(recipe.name)
+                .font(.headline)
+                .lineLimit(2)
+                .foregroundColor(Color.appText)
+                .padding([.horizontal, .bottom], 8)
+                .padding(.top, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer()
         }
-        .buttonStyle(.plain)
         .background(Color.appBackground)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)

@@ -88,7 +88,7 @@ class LoginViewModel: ObservableObject {
 
     func updatePassword(newPassword: String) {
         guard let data = UserDefaults.standard.data(forKey: "currentUser"),
-              let currentUser = try? JSONDecoder().decode(User.self, from: data) else { //will ge the current user
+              let currentUser = try? JSONDecoder().decode(User.self, from: data) else { //will get the current user
             passwordMessage = "No logged-in user found."
             return
         }

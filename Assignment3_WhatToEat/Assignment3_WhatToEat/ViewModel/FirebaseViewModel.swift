@@ -92,7 +92,7 @@ class FirestoreManager: ObservableObject {
                 }
 
                 document.reference.updateData([
-                    "favourites": FieldValue.arrayRemove([recipeID])
+                    "favourites": FieldValue.arrayRemove([recipeID]) //remvoe the favourites with recipe ID
                 ]) { error in
                     completion(error == nil)
                 }
@@ -115,7 +115,7 @@ class FirestoreManager: ObservableObject {
                     return
                 }
 
-                if let favourites = document.data()["favourites"] as? [String] {
+                if let favourites = document.data()["favourites"] as? [String] { //get the favourites and take as an array of string
                     completion(favourites.contains(recipeID))
                 } else {
                     completion(false)
@@ -185,7 +185,7 @@ class FirestoreManager: ObservableObject {
                     return
                 }
                 
-                document.reference.updateData(["password": newPassword]) { error in
+                document.reference.updateData(["password": newPassword]) { error in // if user is found, update the password
                     if let error = error {
                         print("Failed to update password: \(error.localizedDescription)")
                         completion(false)

@@ -1,4 +1,4 @@
-//
+////
 //  HomeView.swift
 //  Assignment3_WhatToEat
 //
@@ -7,14 +7,18 @@
 
 import SwiftUI
 
-// Home View
 struct HomeView: View {
     @ObservedObject var loginModel: LoginViewModel
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State private var isButtonScaled = false
     @State private var accountOrLogin = false
 
     var body: some View {
+        let largeTitleBaseSize: CGFloat = horizontalSizeClass == .regular ? 50 : 34
+        let headlineBaseSize: CGFloat = horizontalSizeClass == .regular ? 28 : 17
+        let title2BaseSize: CGFloat = horizontalSizeClass == .regular ? 34 : 22
+        let iconSystemFontStyle: Font = .title2
 
         VStack(spacing: 40) {
 
@@ -28,28 +32,26 @@ struct HomeView: View {
                 .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
 
             Text("What-To-Eat")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.appPrimaryOrange) //
+                .font(.system(size: largeTitleBaseSize, weight: .bold))
+                .foregroundColor(.appPrimaryOrange)
 
             Text("Enter your ingredients and discover delicious recipes!")
-                .font(.headline)
-                .foregroundColor(.appMutedText) //
+                .font(.system(size: headlineBaseSize))
+                .foregroundColor(.appMutedText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             Spacer()
 
-            NavigationLink(destination: IngredientsView()) { //
+            NavigationLink(destination: IngredientsView()) {
                 Text("Find Recipes")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.system(size: title2BaseSize, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.vertical, 15)
                     .padding(.horizontal, 40)
-                    .background(Color.appPrimaryOrange) //
+                    .background(Color.appPrimaryOrange)
                     .clipShape(Capsule())
-                    .shadow(color: Color.appPrimaryOrange.opacity(0.5), radius: 8, x: 0, y: 4) //
+                    .shadow(color: Color.appPrimaryOrange.opacity(0.5), radius: 8, x: 0, y: 4)
                     .scaleEffect(isButtonScaled ? 1.05 : 1.0)
                     .animation(.easeInOut(duration: 0.15), value: isButtonScaled)
                     .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
@@ -71,14 +73,14 @@ struct HomeView: View {
                     }
                 }) {
                     Image(systemName: "person.crop.circle")
-                        .font(.title2)
+                        .font(iconSystemFontStyle)
                         .foregroundColor(.appPrimaryOrange)
                 }
             }
         }
         NavigationLink(
             destination: loginModel.canLogin
-                ? AnyView(AccountView(loginModel: loginModel)) // display account if logged in
+                ? AnyView(AccountView(loginModel: loginModel))
                 : AnyView(LoginView(loginModel: loginModel)),
             isActive: $accountOrLogin
         ) {
@@ -90,14 +92,8 @@ struct HomeView: View {
 // Preview
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationStack { // Use NavigationStack for preview consistency
+        NavigationStack {
             HomeView(loginModel: LoginViewModel())
         }
-        .preferredColorScheme(.light)
-
-        NavigationStack { // Use NavigationStack for preview consistency
-            HomeView(loginModel: LoginViewModel())
-        }
-        .preferredColorScheme(.dark)
     }
 }

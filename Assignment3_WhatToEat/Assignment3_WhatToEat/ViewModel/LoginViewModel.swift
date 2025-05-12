@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 class LoginViewModel: ObservableObject {
+    @AppStorage("ingredientStorage") private var ingredientStorage: String = ""
+    
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var name: String = ""
@@ -33,6 +35,7 @@ class LoginViewModel: ObservableObject {
                 if user.password == self.password {
                     self.canLogin = true
                     self.cannotLogin = nil
+                    self.ingredientStorage = ""
                     
                     if let encodedUser = try? JSONEncoder().encode(user) {
                         UserDefaults.standard.set(encodedUser, forKey: "currentUser") //save in userDefaults first
@@ -82,6 +85,7 @@ class LoginViewModel: ObservableObject {
         password = ""
         cannotLogin = nil
         canLogin = false
+        self.ingredientStorage = ""
         
         UserDefaults.standard.removeObject(forKey: "currentUser")
     }

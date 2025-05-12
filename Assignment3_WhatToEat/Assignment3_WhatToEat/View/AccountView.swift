@@ -15,6 +15,8 @@ struct AccountView: View {
 
     @State private var favoriteRecipes: [Recipe] = []
     @State private var newPassword: String = ""
+    @State private var showPasswordAlert: Bool = false
+    @State private var passwordAlertMessage: String = ""
     
     var user: User? {
         guard let currentUser = currentUser,
@@ -51,18 +53,16 @@ struct AccountView: View {
 
                             Button("Change Password") {
                                 loginModel.updatePassword(newPassword: newPassword)
+                                if let message = loginModel.passwordMessage {
+                                    passwordAlertMessage = message
+                                    showPasswordAlert = true
+                                }
                             }
                             .font(.subheadline) //this will make button smaller then headline
                             .padding()
                             .background(Color.appPrimaryOrange)
                             .foregroundColor(.white)
                             .cornerRadius(10)
-
-                            if let message = loginModel.passwordMessage {
-                                Text(message)
-                                    .foregroundColor(message.contains("success") ? .green : .red)
-                                    .padding(.top, 10)
-                            }
                         }
                     }
                     .padding()
@@ -147,6 +147,13 @@ struct AccountView: View {
                     }
                 }
             }
+        }
+        .alert(isPresented: $showPasswordAlert) {
+            Alert(
+                title: Text("Password Update"),
+                message: Text(passwordAlertMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
 }

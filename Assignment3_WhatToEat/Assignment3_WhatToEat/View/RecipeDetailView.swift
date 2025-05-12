@@ -47,40 +47,38 @@ struct RecipeDetailView: View {
                     Spacer()
 
                     // Heart icon toggles favourite state
-                    Button(action: {
-                        guard let data = currentUser,
-                              let user = try? JSONDecoder().decode(User.self, from: data),
-                              let recipeID = recipe.id else {
-                            print("Invalid user data or recipe ID")
-                            return
-                        }
-
-                        if isFavourite {
-                            // If currently favourited, remove from favourites in Firestore
-                            firestoreManager.removeFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
-                                if success {
-                                    isFavourite = false
-                                } else {
-                                    print("Failed to remove from favourites")
+                    if let data = currentUser,
+                       let user = try? JSONDecoder().decode(User.self, from: data),
+                       let recipeID = recipe.id { // this will check if the current user is not nil, is decoadable data, and correct recipe ID
+                        Button(action: {
+                            if isFavourite {
+                                // If currently favourited, remove from favourites in Firestore
+                                firestoreManager.removeFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
+                                    if success {
+                                        isFavourite = false
+                                    } else {
+                                        print("Failed to remove from favourites")
+                                    }
+                                }
+                            } else {
+                                // Otherwise, add to favourites
+                                firestoreManager.addFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
+                                    if success {
+                                        isFavourite = true
+                                    } else {
+                                        print("Failed to add to favourites")
+                                    }
                                 }
                             }
-                        } else {
-                            // Otherwise, add to favourites
-                            firestoreManager.addFavourite(forUserEmail: user.email, recipeID: recipeID) { success in
-                                if success {
-                                    isFavourite = true
-                                } else {
-                                    print("Failed to add to favourites")
-                                }
-                            }
+                        }) {
+                            // This will display filled or unfilled heart based on isFavourite state
+                            Image(systemName: isFavourite ? "heart.fill" : "heart")
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.red)
                         }
-                    }) {
-                        // Display filled or unfilled heart based on isFavourite state
-                        Image(systemName: isFavourite ? "heart.fill" : "heart")
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.red)
                     }
+
                 }
 
                 // --- Ingredients Section ---

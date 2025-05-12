@@ -168,4 +168,31 @@ class FirestoreManager: ObservableObject {
                 }
             }
     }
+    
+    func updatePassword(forEmail email: String, newPassword: String, completion: @escaping (Bool) -> Void) {
+        db.collection("Users")
+            .whereField("email", isEqualTo: email)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error finding user: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+                
+                guard let document = snapshot?.documents.first else {
+                    print("No user found with email \(email)")
+                    completion(false)
+                    return
+                }
+                
+                document.reference.updateData(["password": newPassword]) { error in
+                    if let error = error {
+                        print("Failed to update password: \(error.localizedDescription)")
+                        completion(false)
+                    } else {
+                        completion(true)
+                    }
+                }
+            }
+    }
 }

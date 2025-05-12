@@ -17,6 +17,7 @@ class LoginViewModel: ObservableObject {
     @Published var canRegister: Bool = false
     @Published var cannotRegister: String? = nil
     @Published var compeleRegister: String? = nil
+    @Published var passwordMessage: String? = nil
     
     private var firestoreManager = FirestoreManager()
     
@@ -28,7 +29,7 @@ class LoginViewModel: ObservableObject {
                     self.canLogin = false
                     return
                 }
-
+                
                 if user.password == self.password {
                     self.canLogin = true
                     self.cannotLogin = nil
@@ -83,5 +84,27 @@ class LoginViewModel: ObservableObject {
         canLogin = false
         
         UserDefaults.standard.removeObject(forKey: "currentUser")
+    }
+
+    func updatePassword(newPassword: String) {
+        guard let data = UserDefaults.standard.data(forKey: "currentUser"),
+              let currentUser = try? JSONDecoder().decode(User.self, from: data) else { //will ge the current user
+            passwordMessage = "No logged-in user found."
+            return
+        }
+        
+        firestoreManager.updatePassword(forEmail: currentUser.email, newPassword: newPassword) { success in
+            DispatchQueue.main.async {
+                self.passwordMessage = success ? "Password updated successfully!" : "Failed to update password."
+                
+                if success {
+                    var updatedUser = currentUser
+                    updatedUser.password = newPassword //update the password here
+                    if let encoded = try? JSONEncoder().encode(updatedUser) {
+                        UserDefaults.standard.set(encoded, forKey: "currentUser")
+                    }
+                }
+            }
+        }
     }
 }

@@ -13,9 +13,9 @@ struct AccountView: View {
     @AppStorage("currentUser") var currentUser: Data?
     @Environment(\.dismiss) var dismiss
 
-    //Replace this placeholder with actual fetched favorite recipes for the user
     @State private var favoriteRecipes: [Recipe] = []
-
+    @State private var newPassword: String = ""
+    
     var user: User? {
         guard let currentUser = currentUser,
               let user = try? JSONDecoder().decode(User.self, from: currentUser) else {
@@ -29,19 +29,40 @@ struct AccountView: View {
             VStack(spacing: 20) {
                 if let user = user {
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack {
+                        HStack { //This part will display the user name
                             Image(systemName: "person.fill")
                                 .foregroundColor(.appPrimaryOrange)
                             Text(user.name)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                         }
-                        HStack {
+                        HStack { //This part will display the user email
                             Image(systemName: "envelope.fill")
                                 .foregroundColor(.appPrimaryOrange)
                             Text(user.email)
                                 .font(.body)
                                 .foregroundColor(.appMutedText)
+                        }
+                        HStack { //this part will display password change section
+                            SecureField("New Password", text: $newPassword)
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+
+                            Button("Change Password") {
+                                loginModel.updatePassword(newPassword: newPassword)
+                            }
+                            .font(.subheadline) //this will make button smaller then headline
+                            .padding()
+                            .background(Color.appPrimaryOrange)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+
+                            if let message = loginModel.passwordMessage {
+                                Text(message)
+                                    .foregroundColor(message.contains("success") ? .green : .red)
+                                    .padding(.top, 10)
+                            }
                         }
                     }
                     .padding()

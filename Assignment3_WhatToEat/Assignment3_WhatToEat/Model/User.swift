@@ -9,7 +9,7 @@ import FirebaseFirestore
 
 struct User: Codable {
     let email: String
-    let password: String
+    var password: String
     let name: String
     var favourites: [String]?
 }

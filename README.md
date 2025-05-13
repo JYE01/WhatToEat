@@ -4,7 +4,7 @@ UTS IOS application programming assignment3
 This Git Hub repo link
 https://github.com/JYE01/WhatToEat
 
-Author: Junhui Ye, Yu Lok Fu, Aranth Tjandra
+Author: Junhui Ye - 24611156, Yu Lok Fu - 14467397, Aranth Tjandra - 24756266
 -----------------------------
 
 Brief Project Description

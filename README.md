@@ -1,7 +1,7 @@
 # WhatToEat
 UTS IOS application programming assignment3
 
-This Git Hub repo is a private repo
+This Git Hub repo link
 https://github.com/JYE01/WhatToEat
 
 Author: Junhui Ye, Yu Lok Fu, Aranth Tjandra
